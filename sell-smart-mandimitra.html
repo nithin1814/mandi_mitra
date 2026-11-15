@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sell-Smart Advisor | MandiMitra</title>
+<meta name="description" content="Prototype: an AI selling-plan assistant for small farmers. Demo data only.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700&family=Mukta:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;600;700&family=Noto+Serif+Kannada:wght@600;700&family=Noto+Serif+Devanagari:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --board:#1c1915;      /* slate board, warm charcoal */
+  --board-2:#25211b;
+  --line:#3b3329;
+  --chalk:#eee6d4;      /* chalk white */
+  --chalk-dim:#b9ae98;
+  --paper:#e6d5b0;      /* kraft slip */
+  --ink:#2a2117;
+  --turmeric:#e3a72f;
+  --chilli:#c0452e;
+  --jute:#c9a76a;
+  --neem:#86b273;       /* on board */
+  --neem-deep:#3f6b3a;  /* on paper */
+  --head:"Bitter","Noto Serif Kannada","Noto Serif Devanagari",Georgia,serif;
+  --body:"Mukta","Noto Sans Kannada","Noto Sans Devanagari","Segoe UI",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--board);color:var(--chalk);font:400 1.0625rem/1.6 var(--body);}
+.wrap{max-width:1180px;margin:0 auto;padding:0 clamp(16px,4vw,40px)}
+:focus-visible{outline:3px solid var(--turmeric);outline-offset:3px;border-radius:4px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* header */
+header{border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 0;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}
+.brand svg{flex:none}
+.brand b{display:block;font:700 1.35rem/1.1 var(--head);letter-spacing:.2px}
+.brand small{color:var(--chalk-dim);font-size:.9rem}
+.tools{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.lang{display:flex;gap:6px}
+.lang button{background:none;border:0;color:var(--chalk-dim);font:600 1rem var(--body);padding:6px 10px;cursor:pointer;border-bottom:2px solid transparent}
+.lang button[aria-pressed="true"]{color:var(--chalk);border-bottom-color:var(--turmeric)}
+.demo-tag{border:1.5px dashed var(--jute);color:var(--jute);padding:4px 12px;border-radius:3px;font-size:.9rem;font-weight:600}
+
+/* headline */
+.lead{padding:clamp(28px,5vw,56px) 0 clamp(18px,3vw,30px)}
+h1{font:700 clamp(1.7rem,4.2vw,2.9rem)/1.18 var(--head);margin:0;max-width:22em;text-wrap:balance}
+.lead p{margin:14px 0 0;color:var(--chalk-dim);max-width:46em}
+.lead .row{display:flex;gap:14px;align-items:center;margin-top:18px;flex-wrap:wrap}
+.btn-quiet{background:none;border:1.5px solid var(--chalk-dim);color:var(--chalk);border-radius:6px;padding:8px 16px;font:600 .98rem var(--body);cursor:pointer}
+.btn-quiet:hover{border-color:var(--turmeric)}
+#voiceMsg{color:var(--chalk-dim);font-size:.92rem}
+
+/* two-column main */
+.main{display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:clamp(24px,4vw,48px);align-items:start;padding-bottom:20px}
+
+/* slip (form) */
+.slip{position:relative;background:var(--paper);color:var(--ink);padding:34px 26px 26px;border-radius:3px;box-shadow:0 22px 34px -22px rgba(0,0,0,.8);
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .35  0 0 0 0 .27  0 0 0 0 .12  0 0 0 .09 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");}
+.slip::before{content:"";position:absolute;left:0;right:0;top:-7px;height:14px;background:radial-gradient(circle at 9px 0,var(--board) 6px,transparent 6.5px) 0 0/18px 14px repeat-x}
+.slip h2{font:700 1.3rem/1.2 var(--head);margin:0 0 4px}
+.slip .hint{margin:0 0 18px;color:#5b4a33;font-size:.95rem}
+.f{margin:0 0 14px}
+.f label{display:block;font-weight:600;font-size:.95rem;margin-bottom:2px}
+.f select,.f input[type=number]{width:100%;background:transparent;border:0;border-bottom:1.5px dashed #6d5a3c;border-radius:0;color:var(--ink);font:600 1.15rem var(--body);padding:6px 2px;appearance:none;-webkit-appearance:none}
+.f select{background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M1 1l5 5 5-5' fill='none' stroke='%232a2117' stroke-width='2'/></svg>") right 4px center no-repeat}
+.f select:focus,.f input:focus{outline:none;border-bottom:2px solid var(--ink)}
+.f option{background:#f3e8cc}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:end}
+.consent{display:flex;gap:10px;align-items:flex-start;font-size:.93rem;color:#4a3b27;margin:6px 0 18px}
+.consent input{margin-top:5px;accent-color:var(--neem-deep);width:18px;height:18px;flex:none}
+.btn{background:var(--turmeric);color:#1c1915;border:0;border-bottom:4px solid #a97813;border-radius:6px;padding:12px 22px 10px;font:700 1.05rem var(--body);cursor:pointer;width:100%}
+.btn:hover{background:#efb53f}
+.btn:active{transform:translateY(2px);border-bottom-width:2px}
+.forget{background:none;border:0;color:#5b4a33;text-decoration:underline;font:500 .9rem var(--body);cursor:pointer;margin-top:12px;padding:0}
+.welcome{background:#d9c598;border-radius:4px;padding:8px 12px;margin:0 0 14px;font-size:.92rem;color:#3d3120}
+
+/* board (results) */
+.board{background:var(--board-2);border:1px solid var(--line);border-radius:10px;padding:clamp(18px,3vw,28px)}
+.board h2{font:700 1.2rem var(--head);margin:0 0 2px}
+.board .sub{margin:0 0 18px;color:var(--chalk-dim);font-size:.95rem}
+.mk{padding:14px 0;border-top:1px dashed var(--line)}
+.mk:first-of-type{border-top:0}
+.mk-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.mk-name{font:700 1.08rem var(--head)}
+.mk-name small{font:400 .9rem var(--body);color:var(--chalk-dim);margin-left:8px}
+.mk-net{font:700 1.25rem var(--head);font-variant-numeric:tabular-nums}
+.tag{display:inline-block;margin-left:8px;border:1.5px solid var(--turmeric);color:var(--turmeric);border-radius:3px;padding:0 8px;font:600 .82rem var(--body);vertical-align:2px}
+.tag.closed{border-color:var(--chilli);color:#e8826e}
+.stack{display:flex;height:16px;margin:9px 0 6px;border-radius:2px;overflow:hidden;background:#322b23}
+.stack i{display:block;height:100%;width:0;transition:width .9s cubic-bezier(.2,.7,.2,1)}
+.stack .k{background:var(--neem)}
+.stack .t{background:var(--chilli)}
+.stack .e{background:var(--jute)}
+.mk.out{opacity:.45}
+.calc{color:var(--chalk-dim);font-size:.92rem;font-variant-numeric:tabular-nums}
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin:6px 0 0;font-size:.9rem;color:var(--chalk-dim)}
+.legend span::before{content:"";display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.legend .k::before{background:var(--neem)}.legend .t::before{background:var(--chilli)}.legend .e::before{background:var(--jute)}
+.demo-ctl{display:flex;gap:10px;align-items:center;margin-top:18px;padding-top:14px;border-top:1px solid var(--line);font-size:.95rem;color:var(--chalk-dim)}
+.demo-ctl input{accent-color:var(--turmeric);width:18px;height:18px}
+
+/* three answers */
+.answers{display:grid;grid-template-columns:repeat(3,1fr);margin:34px 0 0;border-top:1px solid var(--line)}
+.ans{padding:20px clamp(12px,2vw,26px) 8px 0}
+.ans+.ans{padding-left:clamp(12px,2vw,26px);border-left:1px solid var(--line)}
+.ans h3{font:700 1.1rem var(--head);margin:0 0 6px}
+.ans p{margin:0;max-width:30em}
+
+/* agent trail */
+.trail{margin-top:44px}
+.trail h2,.plan h2,.who h2{font:700 1.45rem var(--head);margin:0 0 4px}
+.sec-sub{margin:0 0 22px;color:var(--chalk-dim);max-width:44em}
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:0;list-style:none;margin:0;padding:0;counter-reset:s}
+.steps li{position:relative;padding:0 14px 0 0}
+.steps li::before{content:"";position:absolute;top:17px;left:38px;right:0;height:2px;background:var(--line)}
+.steps li:last-child::before{display:none}
+.dot{width:36px;height:36px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font:700 1rem var(--head);color:var(--chalk-dim);background:var(--board);position:relative;z-index:1;transition:all .3s}
+.steps li.active .dot{border-color:var(--turmeric);color:var(--turmeric)}
+.steps li.done .dot{background:var(--neem);border-color:var(--neem);color:#16210f}
+.steps li.wait .dot{border-style:dashed;border-color:var(--jute);color:var(--jute)}
+.steps b{display:block;margin:10px 0 2px;font-weight:700}
+.steps span{display:block;color:var(--chalk-dim);font-size:.93rem;line-height:1.45}
+
+/* plan + approval */
+.plan{margin-top:48px;display:grid;grid-template-columns:1.25fr 1fr;gap:clamp(24px,4vw,56px);align-items:start}
+.plan ol{margin:14px 0 0;padding:0;list-style:none;counter-reset:p}
+.plan li{counter-increment:p;position:relative;padding:0 0 16px 42px;max-width:38em}
+.plan li::before{content:counter(p);position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50%;background:var(--jute);color:var(--board);font:700 .95rem/28px var(--head);text-align:center}
+.plan li b{display:block;font-weight:700}
+.approve{position:relative;background:var(--board-2);border:1px solid var(--line);border-radius:10px;padding:40px 24px 24px}
+.approve p{margin:0 0 16px}
+.acts{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.acts .btn{width:auto}
+.link{background:none;border:0;color:var(--chalk-dim);text-decoration:underline;font:600 1rem var(--body);cursor:pointer;padding:8px 4px}
+.stamp{position:absolute;right:18px;top:-18px;border:3px solid var(--neem);color:var(--neem);font:700 1.5rem/1 var(--head);padding:8px 14px;border-radius:6px;transform:rotate(-7deg);background:var(--board);opacity:0;pointer-events:none}
+.stamp.on{opacity:1;animation:thud .45s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes thud{from{transform:rotate(-7deg) scale(1.7);opacity:0}to{transform:rotate(-7deg) scale(1);opacity:1}}
+#result{color:var(--neem);font-weight:600;margin-top:14px;min-height:1.6em}
+
+/* who connects */
+.who{margin-top:52px}
+.ledger{margin:10px 0 0;border-top:2px solid var(--chalk-dim)}
+.ledger div{display:grid;grid-template-columns:200px 1fr;gap:16px;padding:12px 0;border-bottom:1px solid var(--line)}
+.ledger dt{font:700 1.02rem var(--head)}
+.ledger dd{margin:0;color:var(--chalk-dim)}
+
+footer{margin-top:56px;border-top:1px solid var(--line);padding:26px 0 44px;color:var(--chalk-dim);font-size:.93rem}
+footer p{max-width:60em;margin:0 0 8px}
+footer b{color:var(--chalk)}
+
+@media (max-width:900px){
+  .main,.plan{grid-template-columns:1fr}
+  .answers{grid-template-columns:1fr}
+  .ans+.ans{padding-left:0;border-left:0;border-top:1px solid var(--line);margin-top:10px}
+  .steps{grid-template-columns:1fr;gap:6px}
+  .steps li{padding:0 0 12px 52px;min-height:48px}
+  .steps li::before{left:17px;top:38px;right:auto;width:2px;height:calc(100% - 30px)}
+  .dot{position:absolute;left:0;top:0}
+  .steps b{margin-top:0}
+  .ledger div{grid-template-columns:1fr;gap:2px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <div class="brand">
+      <svg width="38" height="38" viewBox="0 0 40 40" aria-hidden="true"><g fill="none" stroke="#e3a72f" stroke-width="2.4" stroke-linecap="round"><path d="M20 36V10"/><path d="M20 14c-5 0-8-3-8-7 5 0 8 3 8 7z"/><path d="M20 14c5 0 8-3 8-7-5 0-8 3-8 7z"/><path d="M20 22c-5 0-8-3-8-7 5 0 8 3 8 7z"/><path d="M20 22c5 0 8-3 8-7-5 0-8 3-8 7z"/><path d="M20 30c-5 0-8-3-8-7 5 0 8 3 8 7z"/><path d="M20 30c5 0 8-3 8-7-5 0-8 3-8 7z"/></g></svg>
+      <div><b>Sell-Smart Advisor</b><small data-i="brandSub">MandiMitra, your mandi companion</small></div>
+    </div>
+    <div class="tools">
+      <div class="lang" role="group" aria-label="Language">
+        <button data-lang="en" aria-pressed="true">English</button>
+        <button data-lang="kn" aria-pressed="false" lang="kn">ಕನ್ನಡ</button>
+        <button data-lang="hi" aria-pressed="false" lang="hi">हिन्दी</button>
+      </div>
+      <span class="demo-tag" data-i="demoTag">Prototype with demo data</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="lead" aria-live="polite">
+    <h1 id="hero"></h1>
+    <p id="heroSub"></p>
+    <div class="row">
+      <button class="btn-quiet" id="listen" type="button" data-i="listen">Listen</button>
+      <span id="voiceMsg" role="status"></span>
+    </div>
+  </section>
+
+  <div class="main">
+    <form class="slip" id="form" onsubmit="return false">
+      <h2 data-i="formTitle">Tell me about your harvest</h2>
+      <p class="hint" data-i="formHint">Mysuru region, sample location.</p>
+      <div class="welcome" id="welcome" hidden></div>
+      <div class="f"><label for="crop" data-i="crop">Crop</label>
+        <select id="crop"><option value="tomato"></option><option value="onion"></option><option value="maize"></option></select></div>
+      <div class="two">
+        <div class="f"><label for="qty" data-i="qty">Quantity (quintals)</label><input id="qty" type="number" min="1" max="500" value="10" inputmode="numeric"></div>
+        <div class="f"><label for="offer" data-i="offer">Trader's offer today (₹ per quintal)</label><input id="offer" type="number" min="0" step="10" value="2000" inputmode="numeric"></div>
+      </div>
+      <div class="f"><label for="urgency" data-i="urgency">When must you sell?</label>
+        <select id="urgency"><option value="today"></option><option value="fewdays"></option><option value="flexible"></option></select></div>
+      <div class="f"><label for="storage" data-i="storage">Storage available?</label>
+        <select id="storage"><option value="no"></option><option value="yes"></option></select></div>
+      <label class="consent"><input type="checkbox" id="consent"><span data-i="consent">Remember my crop and choices on this phone</span></label>
+      <button class="btn" id="run" type="button" data-i="run">Make my selling plan</button>
+      <button class="forget" id="forget" type="button" hidden data-i="forget">Forget my saved details</button>
+    </form>
+
+    <section class="board" aria-label="Markets">
+      <h2 data-i="boardTitle">Nearby markets, per quintal</h2>
+      <p class="sub" data-i="boardSub">What you keep after transport and fees.</p>
+      <div id="markets"></div>
+      <div class="legend"><span class="k" data-i="lgKeep">You keep</span><span class="t" data-i="lgTrans">Transport</span><span class="e" data-i="lgFees">Fees</span></div>
+      <label class="demo-ctl"><input type="checkbox" id="sim"><span data-i="sim">Demo control: pretend the best market is closed today</span></label>
+    </section>
+  </div>
+
+  <section class="answers" aria-label="Right place, price and time">
+    <div class="ans"><h3 data-i="placeT">Right place</h3><p id="aPlace"></p></div>
+    <div class="ans"><h3 data-i="priceT">Right price</h3><p id="aPrice"></p></div>
+    <div class="ans"><h3 data-i="timeT">Right time</h3><p id="aTime"></p></div>
+  </section>
+
+  <section class="trail">
+    <h2 data-i="trailT">What the agent did</h2>
+    <p class="sec-sub" data-i="trailSub">It plans, checks, recovers when an option fails, and waits for your approval.</p>
+    <ol class="steps" id="steps"></ol>
+  </section>
+
+  <section class="plan">
+    <div>
+      <h2 data-i="planT">Your selling plan</h2>
+      <ol id="planList"></ol>
+    </div>
+    <div class="approve" id="approveBox">
+      <div class="stamp" id="stamp" data-i="stamp">Approved</div>
+      <p data-i="approveP">Nothing is sold, borrowed or shared until you say so.</p>
+      <div class="acts">
+        <button class="btn" id="approve" type="button" data-i="approve">Approve this plan</button>
+        <button class="link" id="another" type="button" data-i="another">Show another option</button>
+        <button class="link" id="notnow" type="button" data-i="notnow">Not now</button>
+      </div>
+      <div id="result" role="status"></div>
+    </div>
+  </section>
+
+  <section class="who">
+    <h2 data-i="whoT">Who it connects</h2>
+    <p class="sec-sub" data-i="whoSub">All links are simulated in this prototype.</p>
+    <dl class="ledger" id="ledger"></dl>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p id="disc"></p>
+    <p id="src"></p>
+    <p><b>Hackholics</b> · Tech4Bharat 2026 · Agriculture and Food Processing</p>
+  </div>
+</footer>
+
+<script>
+/* ---------- demo data (illustrative, not live AGMARKNET prices) ---------- */
+const CROPS = {
+  tomato:{perish:true, charge:90, loss:[4.87,11.61],
+    markets:[{id:'mys',p:2200,t:40,f:60,km:8},{id:'nan',p:2450,t:110,f:65,km:25},{id:'hun',p:2350,t:85,f:55,km:45}]},
+  onion:{perish:false, charge:30, loss:[4.87,11.61],
+    markets:[{id:'mys',p:2400,t:40,f:60,km:8},{id:'nan',p:2600,t:110,f:65,km:25},{id:'hun',p:2500,t:85,f:55,km:45}]},
+  maize:{perish:false, charge:20, loss:[3.89,5.92],
+    markets:[{id:'mys',p:2200,t:40,f:60,km:8},{id:'nan',p:2350,t:110,f:65,km:25},{id:'hun',p:2300,t:85,f:55,km:45}]}
+};
+const rs = n => "₹" + Math.round(n).toLocaleString("en-IN");
+
+/* ---------- text in three languages (sample translations, to be reviewed by native speakers) ---------- */
+const L = {
+en:{
+  brandSub:"MandiMitra, your mandi companion", demoTag:"Prototype with demo data", listen:"Listen",
+  formTitle:"Tell me about your harvest", formHint:"Mysuru region, sample location.",
+  crop:"Crop", qty:"Quantity (quintals)", offer:"Trader's offer today (₹ per quintal)",
+  urgency:"When must you sell?", storage:"Storage available?",
+  consent:"Remember my crop and choices on this phone", run:"Make my selling plan", forget:"Forget my saved details",
+  boardTitle:"Nearby markets, per quintal", boardSub:"What you keep after transport and fees.",
+  lgKeep:"You keep", lgTrans:"Transport", lgFees:"Fees",
+  sim:"Demo control: pretend the best market is closed today",
+  placeT:"Right place", priceT:"Right price", timeT:"Right time",
+  trailT:"What the agent did", trailSub:"It plans, checks, recovers when an option fails, and waits for your approval.",
+  planT:"Your selling plan", approveP:"Nothing is sold, borrowed or shared until you say so.",
+  approve:"Approve this plan", another:"Show another option", notnow:"Not now", stamp:"Approved",
+  whoT:"Who it connects", whoSub:"All links are simulated in this prototype.",
+  crops:{tomato:"Tomato",onion:"Onion",maize:"Maize"},
+  urg:{today:"As soon as possible",fewdays:"Within a few days",flexible:"I can wait if storage is safe"},
+  yn:{yes:"Yes",no:"No"},
+  mk:{mys:"Mysuru APMC",nan:"Nanjangud market",hun:"Hunsur market"},
+  km:k=>`${k} km`, best:"Best net", next:"Next best", closed:"Closed today (simulated)",
+  shelf:"about a week",
+  heroBeat:(o,b,n)=>`Your trader quoted ${o}. ${b} pays ${n} per quintal after transport and fees.`,
+  heroHold:o=>`Your trader's offer of ${o} holds up well against nearby markets.`,
+  heroNone:(b,n)=>`${b} gives the best net price today: ${n} per quintal.`,
+  subGain:(g,q)=>`That is about ${g} more for ${q} quintals. An estimate from demo data.`,
+  subNone:"Estimates from demo data, not live prices or buyer offers.",
+  aPlace:(b,n)=>`${b} gives the highest net price: ${n} per quintal.`,
+  aPriceGap:(d,t)=>`The trader's offer is ${d} per quintal below the best net price, ${t} across your quantity.`,
+  aPriceHold:"The trader's offer matches or beats the best net price here. Still ask for it in writing.",
+  aPriceNone:"Enter the trader's offer to compare it.",
+  tNow:"Sell soon. Ask for the buyer's written offer and check quality deductions before loading.",
+  tFew:"You have a few days. Check prices again before dispatch; do not assume they will rise.",
+  tNoStore:"No safe storage selected. Sell now, or ask your FPO or a nearby warehouse before waiting.",
+  tPerish:s=>`This crop spoils quickly (${s}). Storing it is risky; selling within days is usually safer.`,
+  tStore:(lo,hi)=>`If you store for a month, the price must rise by about ${lo} to ${hi} per quintal just to match selling now.`,
+  loan:"Stored in a WDRA-accredited warehouse, you may be able to take a loan against the receipt. Ask your bank about eligibility and rates.",
+  fpo:"Small lot: ask your FPO about pooling produce to reach better buyers.",
+  p1h:"Place", p2h:"Price", p3h:"Time", p4h:"Also consider",
+  planPlace:(q,c,m,k)=>`Take ${q} quintals of ${c} to ${m}, about ${k} km away.`,
+  planPrice:(d)=>`The trader's offer is ${d} per quintal below this net price. Ask for a written offer at the mandi before you decide.`,
+  planPriceHold:"The trader's offer matches or beats this net price. You can still ask for it in writing.",
+  planPriceNone:"Enter the trader's offer to compare it.",
+  steps:["Plan","Check","Recover","Approve","Remember"],
+  sPlan:(q,c)=>`Plan made for ${q} quintals of ${c}`,
+  sCheck:"Compared 3 markets after transport and fees",
+  sRecOk:"No gaps found", sRec:(c,m)=>`${c} is closed (simulated). Switched to ${m}`,
+  sApp:"Waiting for you. Nothing happens without it.", sAppDone:"You approved this plan",
+  sMem:"Saved on this phone", sMemNo:"Not saved (no consent)",
+  okMsg:"Plan approved. Nothing has been sold, borrowed or shared. You complete the sale with the mandi or buyer yourself.",
+  nowMsg:"Plan kept as a draft. Nothing has been done.",
+  welcome:"Welcome back. Your last choices were loaded from this phone.",
+  voiceNo:"Voice is not available for this language on this device.",
+  ledger:[["Farmers","Enter crop, quantity and selling needs; approve every step."],["Mandis and e-NAM","Provide market prices and trading information."],["FPOs","Pool produce and coordinate buyers."],["Warehouses","Share storage availability and charges."],["Banks","May offer eligible credit against stored produce."],["Buyers","Share purchase needs and actual offers."]],
+  disc:"This is a prototype. Prices, transport and fees are illustrative demo values, not live AGMARKNET prices or verified buyer offers, and all integrations are simulated. Verify the real offer before selling. Nothing here predicts future prices.",
+  src:"Storage loss ranges come from the NABCONS 2022 study (cereals 3.89–5.92%, vegetables 4.87–11.61%). They are study-level estimates, not a promise for any one farmer."
+},
+kn:{
+  brandSub:"ಮಂಡಿ ಮಿತ್ರ, ನಿಮ್ಮ ಮಾರುಕಟ್ಟೆ ಸಂಗಾತಿ", demoTag:"ಡೆಮೊ ಅಂಕಿಗಳ ಮಾದರಿ", listen:"ಕೇಳಿ",
+  formTitle:"ನಿಮ್ಮ ಬೆಳೆಯ ಬಗ್ಗೆ ಹೇಳಿ", formHint:"ಮೈಸೂರು ಪ್ರದೇಶ, ಮಾದರಿ ಸ್ಥಳ.",
+  crop:"ಬೆಳೆ", qty:"ಪ್ರಮಾಣ (ಕ್ವಿಂಟಾಲ್)", offer:"ಇಂದಿನ ವ್ಯಾಪಾರಿಯ ಬೆಲೆ (ಪ್ರತಿ ಕ್ವಿಂಟಾಲ್ ₹)",
+  urgency:"ಯಾವಾಗ ಮಾರಬೇಕು?", storage:"ಸಂಗ್ರಹ ಸೌಲಭ್ಯ ಇದೆಯೇ?",
+  consent:"ಈ ಫೋನ್‌ನಲ್ಲಿ ನನ್ನ ಬೆಳೆ ಮತ್ತು ಆಯ್ಕೆಗಳನ್ನು ನೆನಪಿಡಿ", run:"ನನ್ನ ಮಾರಾಟ ಯೋಜನೆ ಮಾಡಿ", forget:"ಉಳಿಸಿದ ವಿವರಗಳನ್ನು ಅಳಿಸಿ",
+  boardTitle:"ಹತ್ತಿರದ ಮಾರುಕಟ್ಟೆಗಳು, ಪ್ರತಿ ಕ್ವಿಂಟಾಲ್‌ಗೆ", boardSub:"ಸಾಗಣೆ ಮತ್ತು ಶುಲ್ಕದ ನಂತರ ನಿಮಗೆ ಉಳಿಯುವುದು.",
+  lgKeep:"ನಿಮಗೆ ಉಳಿಯುವುದು", lgTrans:"ಸಾಗಣೆ", lgFees:"ಶುಲ್ಕ",
+  sim:"ಡೆಮೊ ನಿಯಂತ್ರಣ: ಅತ್ಯುತ್ತಮ ಮಾರುಕಟ್ಟೆ ಇಂದು ಮುಚ್ಚಿದೆ ಎಂದು ಭಾವಿಸಿ",
+  placeT:"ಸರಿಯಾದ ಸ್ಥಳ", priceT:"ಸರಿಯಾದ ಬೆಲೆ", timeT:"ಸರಿಯಾದ ಸಮಯ",
+  trailT:"ಏಜೆಂಟ್ ಏನು ಮಾಡಿತು", trailSub:"ಯೋಜಿಸುತ್ತದೆ, ಪರಿಶೀಲಿಸುತ್ತದೆ, ಆಯ್ಕೆ ವಿಫಲವಾದರೆ ಬದಲಿ ಹುಡುಕುತ್ತದೆ, ನಿಮ್ಮ ಒಪ್ಪಿಗೆಗಾಗಿ ಕಾಯುತ್ತದೆ.",
+  planT:"ನಿಮ್ಮ ಮಾರಾಟ ಯೋಜನೆ", approveP:"ನೀವು ಹೇಳುವವರೆಗೆ ಏನನ್ನೂ ಮಾರಲಾಗುವುದಿಲ್ಲ, ಸಾಲ ತೆಗೆದುಕೊಳ್ಳಲಾಗುವುದಿಲ್ಲ ಅಥವಾ ಹಂಚಲಾಗುವುದಿಲ್ಲ.",
+  approve:"ಈ ಯೋಜನೆಗೆ ಒಪ್ಪಿಗೆ", another:"ಇನ್ನೊಂದು ಆಯ್ಕೆ ತೋರಿಸಿ", notnow:"ಈಗ ಬೇಡ", stamp:"ಒಪ್ಪಿಗೆ",
+  whoT:"ಯಾರನ್ನು ಸಂಪರ್ಕಿಸುತ್ತದೆ", whoSub:"ಈ ಮಾದರಿಯಲ್ಲಿ ಎಲ್ಲಾ ಸಂಪರ್ಕಗಳು ಅನುಕರಣೆ ಮಾತ್ರ.",
+  crops:{tomato:"ಟೊಮೆಟೊ",onion:"ಈರುಳ್ಳಿ",maize:"ಮೆಕ್ಕೆಜೋಳ"},
+  urg:{today:"ಆದಷ್ಟು ಬೇಗ",fewdays:"ಕೆಲವು ದಿನಗಳಲ್ಲಿ",flexible:"ಸುರಕ್ಷಿತ ಸಂಗ್ರಹ ಇದ್ದರೆ ಕಾಯಬಲ್ಲೆ"},
+  yn:{yes:"ಹೌದು",no:"ಇಲ್ಲ"},
+  mk:{mys:"ಮೈಸೂರು ಎಪಿಎಂಸಿ",nan:"ನಂಜನಗೂಡು ಮಾರುಕಟ್ಟೆ",hun:"ಹುಣಸೂರು ಮಾರುಕಟ್ಟೆ"},
+  km:k=>`${k} ಕಿ.ಮೀ.`, best:"ಅತ್ಯುತ್ತಮ", next:"ಮುಂದಿನ ಉತ್ತಮ", closed:"ಇಂದು ಮುಚ್ಚಿದೆ (ಅನುಕರಣೆ)",
+  shelf:"ಸುಮಾರು ಒಂದು ವಾರ",
+  heroBeat:(o,b,n)=>`ನಿಮ್ಮ ವ್ಯಾಪಾರಿ ${o} ಹೇಳಿದರು. ಸಾಗಣೆ ಮತ್ತು ಶುಲ್ಕದ ನಂತರವೂ ${b} ನಲ್ಲಿ ಪ್ರತಿ ಕ್ವಿಂಟಾಲ್‌ಗೆ ${n} ಸಿಗುತ್ತದೆ.`,
+  heroHold:o=>`ನಿಮ್ಮ ವ್ಯಾಪಾರಿಯ ${o} ಬೆಲೆ ಹತ್ತಿರದ ಮಾರುಕಟ್ಟೆಗಳ ಬೆಲೆಗೆ ಸರಿಸಮನಾಗಿದೆ.`,
+  heroNone:(b,n)=>`${b} ನಲ್ಲಿ ಇಂದು ಅತ್ಯುತ್ತಮ ನಿವ್ವಳ ಬೆಲೆ: ಪ್ರತಿ ಕ್ವಿಂಟಾಲ್‌ಗೆ ${n}.`,
+  subGain:(g,q)=>`${q} ಕ್ವಿಂಟಾಲ್‌ಗೆ ಸುಮಾರು ${g} ಹೆಚ್ಚು. ಇದು ಡೆಮೊ ಅಂಕಿಗಳ ಅಂದಾಜು.`,
+  subNone:"ಇವು ಡೆಮೊ ಅಂಕಿಗಳ ಅಂದಾಜು, ನೇರ ಬೆಲೆ ಅಥವಾ ಖರೀದಿದಾರರ ಕೊಡುಗೆ ಅಲ್ಲ.",
+  aPlace:(b,n)=>`${b} ನಲ್ಲಿ ಅತ್ಯಧಿಕ ನಿವ್ವಳ ಬೆಲೆ: ಪ್ರತಿ ಕ್ವಿಂಟಾಲ್‌ಗೆ ${n}.`,
+  aPriceGap:(d,t)=>`ವ್ಯಾಪಾರಿಯ ಬೆಲೆ ಅತ್ಯುತ್ತಮ ನಿವ್ವಳ ಬೆಲೆಗಿಂತ ಪ್ರತಿ ಕ್ವಿಂಟಾಲ್‌ಗೆ ${d} ಕಡಿಮೆ; ನಿಮ್ಮ ಪ್ರಮಾಣಕ್ಕೆ ${t}.`,
+  aPriceHold:"ವ್ಯಾಪಾರಿಯ ಬೆಲೆ ಇಲ್ಲಿನ ಅತ್ಯುತ್ತಮ ನಿವ್ವಳ ಬೆಲೆಗೆ ಸಮ ಅಥವಾ ಹೆಚ್ಚು. ಆದರೂ ಲಿಖಿತವಾಗಿ ಕೇಳಿ.",
+  aPriceNone:"ಹೋಲಿಸಲು ವ್ಯಾಪಾರಿಯ ಬೆಲೆಯನ್ನು ನಮೂದಿಸಿ.",
+  tNow:"ಬೇಗ ಮಾರಿ. ಲೋಡ್ ಮಾಡುವ ಮೊದಲು ಖರೀದಿದಾರರ ಲಿಖಿತ ಬೆಲೆ ಮತ್ತು ಗುಣಮಟ್ಟದ ಕಡಿತಗಳನ್ನು ಕೇಳಿ.",
+  tFew:"ಕೆಲವು ದಿನ ಸಮಯವಿದೆ. ರವಾನೆಗೆ ಮೊದಲು ಬೆಲೆಯನ್ನು ಮತ್ತೆ ನೋಡಿ; ಬೆಲೆ ಏರುತ್ತದೆ ಎಂದು ಭಾವಿಸಬೇಡಿ.",
+  tNoStore:"ಸುರಕ್ಷಿತ ಸಂಗ್ರಹ ಇಲ್ಲ. ಈಗಲೇ ಮಾರಿ, ಅಥವಾ ಕಾಯುವ ಮೊದಲು ನಿಮ್ಮ ಎಫ್‌ಪಿಒ ಅಥವಾ ಹತ್ತಿರದ ಗೋದಾಮನ್ನು ಕೇಳಿ.",
+  tPerish:s=>`ಈ ಬೆಳೆ ಬೇಗ ಹಾಳಾಗುತ್ತದೆ (${s}). ಸಂಗ್ರಹ ಅಪಾಯಕಾರಿ; ಕೆಲವೇ ದಿನಗಳಲ್ಲಿ ಮಾರುವುದು ಸುರಕ್ಷಿತ.`,
+  tStore:(lo,hi)=>`ಒಂದು ತಿಂಗಳು ಸಂಗ್ರಹಿಸಿದರೆ, ಈಗ ಮಾರುವುದಕ್ಕೆ ಸಮನಾಗಲು ಬೆಲೆ ಪ್ರತಿ ಕ್ವಿಂಟಾಲ್‌ಗೆ ಸುಮಾರು ${lo} ರಿಂದ ${hi} ಏರಬೇಕು.`,
+  loan:"ಡಬ್ಲ್ಯೂಡಿಆರ್‌ಎ ಮಾನ್ಯತೆ ಪಡೆದ ಗೋದಾಮಿನಲ್ಲಿ ಸಂಗ್ರಹಿಸಿದರೆ ರಸೀದಿಯ ಮೇಲೆ ಸಾಲ ಸಿಗಬಹುದು. ಅರ್ಹತೆ ಮತ್ತು ಬಡ್ಡಿಯನ್ನು ನಿಮ್ಮ ಬ್ಯಾಂಕ್‌ನಲ್ಲಿ ಕೇಳಿ.",
+  fpo:"ಚಿಕ್ಕ ಪ್ರಮಾಣ: ಉತ್ತಮ ಖರೀದಿದಾರರನ್ನು ತಲುಪಲು ನಿಮ್ಮ ಎಫ್‌ಪಿಒ ಜೊತೆ ಸೇರಿ ಮಾರುವ ಬಗ್ಗೆ ಕೇಳಿ.",
+  p1h:"ಸ್ಥಳ", p2h:"ಬೆಲೆ", p3h:"ಸಮಯ", p4h:"ಇದನ್ನೂ ಗಮನಿಸಿ",
+  planPlace:(q,c,m,k)=>`${q} ಕ್ವಿಂಟಾಲ್ ${c} ಅನ್ನು ಸುಮಾರು ${k} ಕಿ.ಮೀ. ದೂರದ ${m}ಗೆ ಒಯ್ಯಿರಿ.`,
+  planPrice:d=>`ವ್ಯಾಪಾರಿಯ ಬೆಲೆ ಈ ನಿವ್ವಳ ಬೆಲೆಗಿಂತ ಪ್ರತಿ ಕ್ವಿಂಟಾಲ್‌ಗೆ ${d} ಕಡಿಮೆ. ತೀರ್ಮಾನಿಸುವ ಮೊದಲು ಮಂಡಿಯಲ್ಲಿ ಲಿಖಿತ ಬೆಲೆ ಕೇಳಿ.`,
+  planPriceHold:"ವ್ಯಾಪಾರಿಯ ಬೆಲೆ ಈ ನಿವ್ವಳ ಬೆಲೆಗೆ ಸಮ ಅಥವಾ ಹೆಚ್ಚು. ಅದನ್ನು ಲಿಖಿತವಾಗಿ ಕೇಳಬಹುದು.",
+  planPriceNone:"ಹೋಲಿಸಲು ವ್ಯಾಪಾರಿಯ ಬೆಲೆಯನ್ನು ನಮೂದಿಸಿ.",
+  steps:["ಯೋಜನೆ","ಪರಿಶೀಲನೆ","ಬದಲಿ ಆಯ್ಕೆ","ಒಪ್ಪಿಗೆ","ನೆನಪು"],
+  sPlan:(q,c)=>`${q} ಕ್ವಿಂಟಾಲ್ ${c}ಗೆ ಯೋಜನೆ ಸಿದ್ಧ`,
+  sCheck:"ಸಾಗಣೆ ಮತ್ತು ಶುಲ್ಕದ ನಂತರ 3 ಮಾರುಕಟ್ಟೆಗಳನ್ನು ಹೋಲಿಸಲಾಗಿದೆ",
+  sRecOk:"ಯಾವುದೇ ತೊಂದರೆ ಇಲ್ಲ", sRec:(c,m)=>`${c} ಮುಚ್ಚಿದೆ (ಅನುಕರಣೆ). ${m}ಗೆ ಬದಲಿಸಲಾಗಿದೆ`,
+  sApp:"ನಿಮಗಾಗಿ ಕಾಯುತ್ತಿದೆ. ನಿಮ್ಮ ಒಪ್ಪಿಗೆ ಇಲ್ಲದೆ ಏನೂ ನಡೆಯುವುದಿಲ್ಲ.", sAppDone:"ನೀವು ಈ ಯೋಜನೆಗೆ ಒಪ್ಪಿದ್ದೀರಿ",
+  sMem:"ಈ ಫೋನ್‌ನಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ", sMemNo:"ಉಳಿಸಿಲ್ಲ (ಒಪ್ಪಿಗೆ ಇಲ್ಲ)",
+  okMsg:"ಯೋಜನೆಗೆ ಒಪ್ಪಿಗೆ ಸಿಕ್ಕಿದೆ. ಏನನ್ನೂ ಮಾರಿಲ್ಲ, ಸಾಲ ತೆಗೆದುಕೊಂಡಿಲ್ಲ, ಹಂಚಿಲ್ಲ. ಮಾರಾಟವನ್ನು ನೀವೇ ಮಂಡಿ ಅಥವಾ ಖರೀದಿದಾರರೊಂದಿಗೆ ಪೂರ್ಣಗೊಳಿಸಿ.",
+  nowMsg:"ಯೋಜನೆ ಕರಡಾಗಿ ಉಳಿದಿದೆ. ಏನೂ ಮಾಡಿಲ್ಲ.",
+  welcome:"ಮತ್ತೆ ಸ್ವಾಗತ. ನಿಮ್ಮ ಹಿಂದಿನ ಆಯ್ಕೆಗಳನ್ನು ಈ ಫೋನ್‌ನಿಂದ ಲೋಡ್ ಮಾಡಲಾಗಿದೆ.",
+  voiceNo:"ಈ ಸಾಧನದಲ್ಲಿ ಈ ಭಾಷೆಗೆ ಧ್ವನಿ ಲಭ್ಯವಿಲ್ಲ.",
+  ledger:[["ರೈತರು","ಬೆಳೆ, ಪ್ರಮಾಣ ಮತ್ತು ಮಾರಾಟದ ಅಗತ್ಯ ನಮೂದಿಸಿ; ಪ್ರತಿ ಹಂತಕ್ಕೂ ಒಪ್ಪಿಗೆ ನೀಡಿ."],["ಮಂಡಿಗಳು ಮತ್ತು ಇ-ನ್ಯಾಮ್","ಮಾರುಕಟ್ಟೆ ಬೆಲೆ ಮತ್ತು ವ್ಯಾಪಾರದ ಮಾಹಿತಿ ನೀಡುತ್ತವೆ."],["ಎಫ್‌ಪಿಒಗಳು","ಉತ್ಪನ್ನ ಸೇರಿಸಿ ಖರೀದಿದಾರರೊಂದಿಗೆ ಸಮನ್ವಯ ಮಾಡುತ್ತವೆ."],["ಗೋದಾಮುಗಳು","ಸಂಗ್ರಹ ಲಭ್ಯತೆ ಮತ್ತು ಶುಲ್ಕ ತಿಳಿಸುತ್ತವೆ."],["ಬ್ಯಾಂಕುಗಳು","ಸಂಗ್ರಹಿಸಿದ ಉತ್ಪನ್ನದ ಮೇಲೆ ಅರ್ಹ ಸಾಲ ನೀಡಬಹುದು."],["ಖರೀದಿದಾರರು","ಖರೀದಿ ಅಗತ್ಯ ಮತ್ತು ನಿಜವಾದ ಕೊಡುಗೆ ತಿಳಿಸುತ್ತಾರೆ."]],
+  disc:"ಇದು ಮಾದರಿ ಮಾತ್ರ. ಬೆಲೆ, ಸಾಗಣೆ ಮತ್ತು ಶುಲ್ಕ ಡೆಮೊ ಅಂಕಿಗಳು; ನೇರ ಅಗ್ಮಾರ್ಕ್‌ನೆಟ್ ಬೆಲೆ ಅಥವಾ ಖರೀದಿದಾರರ ಕೊಡುಗೆ ಅಲ್ಲ; ಎಲ್ಲಾ ಸಂಪರ್ಕಗಳು ಅನುಕರಣೆ. ಮಾರುವ ಮೊದಲು ನಿಜವಾದ ಕೊಡುಗೆ ಪರಿಶೀಲಿಸಿ. ಇಲ್ಲಿ ಯಾವುದೂ ಭವಿಷ್ಯದ ಬೆಲೆ ಹೇಳುವುದಿಲ್ಲ.",
+  src:"ಸಂಗ್ರಹ ನಷ್ಟದ ಅಂದಾಜು NABCONS 2022 ಅಧ್ಯಯನದಿಂದ (ಧಾನ್ಯ 3.89–5.92%, ತರಕಾರಿ 4.87–11.61%). ಇವು ಅಧ್ಯಯನ ಮಟ್ಟದ ಅಂದಾಜು, ಒಬ್ಬ ರೈತನಿಗೆ ಖಾತರಿ ಅಲ್ಲ."
+},
+hi:{
+  brandSub:"मंडी मित्र, आपका मंडी साथी", demoTag:"डेमो आंकड़ों वाला प्रोटोटाइप", listen:"सुनें",
+  formTitle:"अपनी फसल के बारे में बताएं", formHint:"मैसूरु क्षेत्र, नमूना स्थान।",
+  crop:"फसल", qty:"मात्रा (क्विंटल)", offer:"आज व्यापारी का भाव (₹ प्रति क्विंटल)",
+  urgency:"कब तक बेचना है?", storage:"भंडारण उपलब्ध है?",
+  consent:"इस फ़ोन पर मेरी फसल और पसंद याद रखें", run:"मेरी बिक्री योजना बनाएं", forget:"सहेजे विवरण मिटाएं",
+  boardTitle:"आसपास की मंडियाँ, प्रति क्विंटल", boardSub:"परिवहन और शुल्क के बाद आपके हाथ में क्या आता है।",
+  lgKeep:"आपको मिलता है", lgTrans:"परिवहन", lgFees:"शुल्क",
+  sim:"डेमो नियंत्रण: मान लें कि सबसे अच्छी मंडी आज बंद है",
+  placeT:"सही जगह", priceT:"सही भाव", timeT:"सही समय",
+  trailT:"एजेंट ने क्या किया", trailSub:"यह योजना बनाता है, जाँचता है, विकल्प विफल होने पर दूसरा खोजता है, और आपकी मंज़ूरी का इंतज़ार करता है।",
+  planT:"आपकी बिक्री योजना", approveP:"जब तक आप न कहें, कुछ भी बेचा, उधार लिया या साझा नहीं किया जाएगा।",
+  approve:"यह योजना मंज़ूर करें", another:"दूसरा विकल्प दिखाएं", notnow:"अभी नहीं", stamp:"मंज़ूर",
+  whoT:"यह किन्हें जोड़ता है", whoSub:"इस प्रोटोटाइप में सभी कड़ियाँ नकली (सिम्युलेटेड) हैं।",
+  crops:{tomato:"टमाटर",onion:"प्याज़",maize:"मक्का"},
+  urg:{today:"जल्द से जल्द",fewdays:"कुछ दिनों में",flexible:"भंडारण सुरक्षित हो तो रुक सकता हूँ"},
+  yn:{yes:"हाँ",no:"नहीं"},
+  mk:{mys:"मैसूरु एपीएमसी",nan:"नंजनगूड मंडी",hun:"हुनसूर मंडी"},
+  km:k=>`${k} किमी`, best:"सबसे अच्छा", next:"अगला अच्छा", closed:"आज बंद (सिम्युलेटेड)",
+  shelf:"लगभग एक सप्ताह",
+  heroBeat:(o,b,n)=>`आपके व्यापारी ने ${o} कहा। परिवहन और शुल्क के बाद भी ${b} में प्रति क्विंटल ${n} मिलता है।`,
+  heroHold:o=>`आपके व्यापारी का ${o} का भाव आसपास की मंडियों के बराबर है।`,
+  heroNone:(b,n)=>`${b} में आज सबसे अच्छा शुद्ध भाव है: ${n} प्रति क्विंटल।`,
+  subGain:(g,q)=>`${q} क्विंटल पर लगभग ${g} अधिक। यह डेमो आंकड़ों का अनुमान है।`,
+  subNone:"ये डेमो आंकड़ों के अनुमान हैं, लाइव भाव या खरीदार के प्रस्ताव नहीं।",
+  aPlace:(b,n)=>`${b} में शुद्ध भाव सबसे अधिक है: ${n} प्रति क्विंटल।`,
+  aPriceGap:(d,t)=>`व्यापारी का भाव सबसे अच्छे शुद्ध भाव से प्रति क्विंटल ${d} कम है, आपकी मात्रा पर ${t}।`,
+  aPriceHold:"यहाँ व्यापारी का भाव सबसे अच्छे शुद्ध भाव के बराबर या अधिक है। फिर भी उसे लिखित में माँगें।",
+  aPriceNone:"तुलना के लिए व्यापारी का भाव दर्ज करें।",
+  tNow:"जल्दी बेचें। माल लादने से पहले खरीदार से लिखित भाव और गुणवत्ता कटौती पूछ लें।",
+  tFew:"कुछ दिन का समय है। भेजने से पहले भाव फिर देखें; यह न मानें कि भाव बढ़ेंगे।",
+  tNoStore:"सुरक्षित भंडारण नहीं चुना गया। अभी बेचें, या रुकने से पहले अपने एफपीओ या पास के गोदाम से पूछें।",
+  tPerish:s=>`यह फसल जल्दी खराब होती है (${s})। भंडारण जोखिम भरा है; कुछ दिनों में बेचना अधिक सुरक्षित है।`,
+  tStore:(lo,hi)=>`एक महीना रखने पर, अभी बेचने के बराबर होने के लिए भाव प्रति क्विंटल लगभग ${lo} से ${hi} बढ़ना चाहिए।`,
+  loan:"डब्ल्यूडीआरए से मान्यता प्राप्त गोदाम में रखने पर रसीद के बदले ऋण मिल सकता है। पात्रता और ब्याज दर अपने बैंक से पूछें।",
+  fpo:"छोटी मात्रा: बेहतर खरीदार तक पहुँचने के लिए अपने एफपीओ से मिलकर बेचने के बारे में पूछें।",
+  p1h:"जगह", p2h:"भाव", p3h:"समय", p4h:"यह भी देखें",
+  planPlace:(q,c,m,k)=>`${q} क्विंटल ${c} को लगभग ${k} किमी दूर ${m} ले जाएँ।`,
+  planPrice:d=>`व्यापारी का भाव इस शुद्ध भाव से प्रति क्विंटल ${d} कम है। तय करने से पहले मंडी में लिखित भाव माँगें।`,
+  planPriceHold:"व्यापारी का भाव इस शुद्ध भाव के बराबर या अधिक है। फिर भी उसे लिखित में माँग सकते हैं।",
+  planPriceNone:"तुलना के लिए व्यापारी का भाव दर्ज करें।",
+  steps:["योजना","जाँच","विकल्प","मंज़ूरी","याददाश्त"],
+  sPlan:(q,c)=>`${q} क्विंटल ${c} की योजना बनी`,
+  sCheck:"परिवहन और शुल्क के बाद 3 मंडियों की तुलना की",
+  sRecOk:"कोई कमी नहीं मिली", sRec:(c,m)=>`${c} बंद है (सिम्युलेटेड)। ${m} पर बदला गया`,
+  sApp:"आपका इंतज़ार है। आपकी मंज़ूरी के बिना कुछ नहीं होगा।", sAppDone:"आपने यह योजना मंज़ूर की",
+  sMem:"इस फ़ोन पर सहेजा गया", sMemNo:"सहेजा नहीं गया (सहमति नहीं)",
+  okMsg:"योजना मंज़ूर हुई। कुछ बेचा, उधार लिया या साझा नहीं किया गया। बिक्री आप स्वयं मंडी या खरीदार के साथ पूरी करें।",
+  nowMsg:"योजना ड्राफ़्ट के रूप में रखी गई। कुछ नहीं किया गया।",
+  welcome:"फिर स्वागत है। आपकी पिछली पसंद इस फ़ोन से लोड की गई।",
+  voiceNo:"इस डिवाइस पर इस भाषा के लिए आवाज़ उपलब्ध नहीं है।",
+  ledger:[["किसान","फसल, मात्रा और बिक्री की ज़रूरत दर्ज करें; हर कदम को मंज़ूरी दें।"],["मंडियाँ और ई-नाम","बाज़ार भाव और व्यापार की जानकारी देती हैं।"],["एफपीओ","उपज इकट्ठा कर खरीदारों से तालमेल बिठाते हैं।"],["गोदाम","भंडारण की उपलब्धता और शुल्क बताते हैं।"],["बैंक","भंडारित उपज के बदले पात्र ऋण दे सकते हैं।"],["खरीदार","खरीद की ज़रूरत और असली प्रस्ताव बताते हैं।"]],
+  disc:"यह एक प्रोटोटाइप है। भाव, परिवहन और शुल्क डेमो मान हैं, लाइव एगमार्कनेट भाव या सत्यापित खरीदार प्रस्ताव नहीं; सभी कड़ियाँ सिम्युलेटेड हैं। बेचने से पहले असली प्रस्ताव जाँचें। यहाँ कुछ भी भविष्य के भाव का अनुमान नहीं है।",
+  src:"भंडारण नुकसान की सीमाएँ NABCONS 2022 अध्ययन से हैं (अनाज 3.89–5.92%, सब्ज़ियाँ 4.87–11.61%)। ये अध्ययन-स्तर के अनुमान हैं, किसी एक किसान की गारंटी नहीं।"
+}};
+const SPEECH = {en:"en-IN",kn:"kn-IN",hi:"hi-IN"};
+
+/* ---------- state ---------- */
+const S = {lang:"en", rank:0, approved:false, first:true, last:null};
+const $ = id => document.getElementById(id);
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const wait = ms => reduce ? Promise.resolve() : new Promise(r => setTimeout(r, ms));
+const KEY = "sellSmartPrototype";
+
+function inputs(){
+  return {crop:$("crop").value, qty:Math.max(1,Math.min(500,Number($("qty").value)||1)),
+    offer:Math.max(0,Number($("offer").value)||0), urgency:$("urgency").value, storage:$("storage").value};
+}
+
+function compute(){
+  const i = inputs(), c = CROPS[i.crop];
+  const all = c.markets.map(m => ({...m, net:m.p-m.t-m.f})).sort((a,b)=>b.net-a.net);
+  const closedId = $("sim").checked ? all[0].id : null;
+  const avail = all.filter(m => m.id !== closedId);
+  const pick = avail[Math.min(S.rank, avail.length-1)];
+  const gain = i.offer>0 && pick.net>i.offer ? (pick.net-i.offer)*i.qty : 0;
+  return {i,c,all,closedId,avail,pick,gain,top:all[0]};
+}
+
+/* ---------- static text ---------- */
+function applyLang(){
+  const t = L[S.lang];
+  document.documentElement.lang = S.lang;
+  document.querySelectorAll("[data-i]").forEach(el => { if (t[el.dataset.i] !== undefined) el.textContent = t[el.dataset.i]; });
+  document.querySelectorAll(".lang button").forEach(b => b.setAttribute("aria-pressed", b.dataset.lang===S.lang));
+  const cs = $("crop"), cv = cs.value; [...cs.options].forEach(o => o.textContent = t.crops[o.value]); cs.value = cv;
+  const us = $("urgency"), uv = us.value; [...us.options].forEach(o => o.textContent = t.urg[o.value]); us.value = uv;
+  const ss = $("storage"), sv = ss.value; [...ss.options].forEach(o => o.textContent = t.yn[o.value]); ss.value = sv;
+  $("ledger").innerHTML = t.ledger.map(r => `<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join("");
+  $("disc").textContent = t.disc; $("src").textContent = t.src;
+}
+
+/* ---------- results ---------- */
+function render(animate){
+  const t = L[S.lang], d = compute(), {i,c,all,closedId,pick,gain} = d;
+  const cropName = t.crops[i.crop], mName = id => t.mk[id];
+
+  // headline
+  let hero;
+  if (i.offer>0 && pick.net>i.offer) hero = t.heroBeat(rs(i.offer), mName(pick.id), rs(pick.net));
+  else if (i.offer>0) hero = t.heroHold(rs(i.offer));
+  else hero = t.heroNone(mName(pick.id), rs(pick.net));
+  $("hero").textContent = hero;
+  $("heroSub").textContent = gain>0 ? t.subGain(rs(gain), i.qty) : t.subNone;
+
+  // markets board
+  const maxP = Math.max(...all.map(m=>m.p));
+  const bestAvail = d.avail[0];
+  $("markets").innerHTML = all.map(m => {
+    const out = m.id===closedId, sel = m.id===pick.id;
+    const tag = out ? `<span class="tag closed">${t.closed}</span>` : sel ? `<span class="tag">${m.id===bestAvail.id ? t.best : t.next}</span>` : "";
+    return `<div class="mk ${out?"out":""}" data-k="${(m.net/maxP*100).toFixed(2)}" data-t="${(m.t/maxP*100).toFixed(2)}" data-e="${(m.f/maxP*100).toFixed(2)}">
+      <div class="mk-top"><div class="mk-name">${mName(m.id)}${tag}<small>${t.km(m.km)}</small></div><div class="mk-net">${rs(m.net)}</div></div>
+      <div class="stack" aria-hidden="true"><i class="k"></i><i class="t"></i><i class="e"></i></div>
+      <div class="calc">${rs(m.p)} − ${rs(m.t)} − ${rs(m.f)} = ${rs(m.net)}</div></div>`;
+  }).join("");
+  const grow = () => document.querySelectorAll(".mk").forEach(r => { const s=r.querySelectorAll(".stack i"); s[0].style.width=r.dataset.k+"%"; s[1].style.width=r.dataset.t+"%"; s[2].style.width=r.dataset.e+"%"; });
+  if (animate && !reduce) requestAnimationFrame(()=>requestAnimationFrame(grow)); else grow();
+
+  // three answers
+  const place = t.aPlace(mName(pick.id), rs(pick.net));
+  const gap = pick.net - i.offer;
+  const price = i.offer<=0 ? t.aPriceNone : gap>0 ? t.aPriceGap(rs(gap), rs(gap*i.qty)) : t.aPriceHold;
+  let time, extra = [];
+  const lo = rs(c.charge + c.loss[0]/100*pick.net), hi = rs(c.charge + c.loss[1]/100*pick.net);
+  if (i.urgency==="today") time = t.tNow;
+  else if (i.urgency==="fewdays") time = t.tFew;
+  else if (i.storage==="no") time = t.tNoStore;
+  else if (c.perish) time = t.tPerish(t.shelf);
+  else { time = t.tStore(lo,hi); extra.push(t.loan); }
+  if (i.qty < 20) extra.push(t.fpo);
+  $("aPlace").textContent = place; $("aPrice").textContent = price; $("aTime").textContent = time;
+
+  // plan
+  const priceLine = i.offer<=0 ? t.planPriceNone : gap>0 ? t.planPrice(rs(gap)) : t.planPriceHold;
+  const items = [[t.p1h, t.planPlace(i.qty, t.crops[i.crop], mName(pick.id), pick.km)],[t.p2h, priceLine],[t.p3h, time]];
+  if (extra.length) items.push([t.p4h, extra.join(" ")]);
+  $("planList").innerHTML = items.map(x => `<li><b>${x[0]}</b>${x[1]}</li>`).join("");
+
+  S.last = {d, hero, time};
+  return d;
+}
+
+/* ---------- agent trail ---------- */
+function drawSteps(states, notes){
+  const t = L[S.lang];
+  $("steps").innerHTML = t.steps.map((name,k) => `<li class="${states[k]}"><div class="dot">${states[k]==="done"?"✓":k+1}</div><b>${name}</b><span>${notes[k]||""}</span></li>`).join("");
+}
+function notesFor(d, consent){
+  const t = L[S.lang], i = d.i;
+  return [ t.sPlan(i.qty, t.crops[i.crop]), t.sCheck,
+    d.closedId ? t.sRec(t.mk[d.closedId], t.mk[d.pick.id]) : t.sRecOk,
+    S.approved ? t.sAppDone : t.sApp,
+    consent ? t.sMem : t.sMemNo ];
+}
+async function run(animate){
+  const consent = $("consent").checked;
+  S.approved = false; S.rank = 0; setApproval(false);
+  if (animate && !reduce) { drawSteps(["wait","wait","wait","wait","wait"], []); await wait(250); }
+  const d = render(animate);
+  const notes = notesFor(d, consent);
+  const states = ["wait","wait","wait","wait","wait"];
+  const finalStates = ["done","done","done","wait","done"];
+  if (animate && !reduce){
+    for (let k=0;k<5;k++){
+      states[k]="active"; drawSteps(states, notes); await wait(420);
+      states[k]=finalStates[k]; drawSteps(states, notes);
+    }
+  } else drawSteps(finalStates, notes);
+  if (consent) save(); else clearSaved(false);
+  try{ $("forget").hidden = !localStorage.getItem(KEY); }catch(e){ $("forget").hidden = true; }
+}
+
+function setApproval(on, msg){
+  $("stamp").classList.remove("on");
+  if (on){ void $("stamp").offsetWidth; $("stamp").classList.add("on"); }
+  $("result").textContent = msg || "";
+}
+
+/* ---------- memory (with consent) ---------- */
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify({...inputs(), lang:S.lang})); }catch(e){} }
+function clearSaved(){ try{ localStorage.removeItem(KEY); }catch(e){} }
+function load(){
+  try{
+    const s = JSON.parse(localStorage.getItem(KEY)||"null"); if(!s) return false;
+    $("crop").value=s.crop; $("qty").value=s.qty; $("offer").value=s.offer; $("urgency").value=s.urgency; $("storage").value=s.storage;
+    if (L[s.lang]) S.lang=s.lang;
+    $("consent").checked=true; return true;
+  }catch(e){ return false; }
+}
+
+/* ---------- voice ---------- */
+function listen(){
+  const t = L[S.lang]; if (!("speechSynthesis" in window)) { $("voiceMsg").textContent=t.voiceNo; return; }
+  const code = SPEECH[S.lang], voices = speechSynthesis.getVoices();
+  if (voices.length && !voices.some(v => v.lang.toLowerCase().startsWith(code.slice(0,2)))) { $("voiceMsg").textContent=t.voiceNo; return; }
+  $("voiceMsg").textContent="";
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance([S.last.hero, $("heroSub").textContent, S.last.time].join(" "));
+  u.lang = code; u.rate = .92; speechSynthesis.speak(u);
+}
+
+/* ---------- events ---------- */
+document.querySelectorAll(".lang button").forEach(b => b.addEventListener("click", () => {
+  S.lang = b.dataset.lang; applyLang(); const d = render(false);
+  const consent=$("consent").checked; const states=[...document.querySelectorAll("#steps li")].map(li=>li.className||"wait");
+  drawSteps(states.length?states:["done","done","done","wait","done"], notesFor(d, consent));
+  $("welcome").textContent = L[S.lang].welcome;
+  if (S.approved) $("result").textContent = L[S.lang].okMsg;
+}));
+$("run").addEventListener("click", () => run(true));
+$("sim").addEventListener("change", () => { S.rank=0; S.approved=false; setApproval(false); const d=render(true); drawSteps(["done","done","done","wait",$("consent").checked?"done":"done"], notesFor(d,$("consent").checked)); });
+$("another").addEventListener("click", () => { const d=compute(); S.rank = (S.rank+1) % d.avail.length; S.approved=false; setApproval(false); const r=render(false); drawSteps(["done","done","done","wait","done"], notesFor(r,$("consent").checked)); });
+$("approve").addEventListener("click", () => { S.approved=true; setApproval(true, L[S.lang].okMsg); drawSteps(["done","done","done","done","done"], notesFor(compute(),$("consent").checked)); });
+$("notnow").addEventListener("click", () => { S.approved=false; setApproval(false, L[S.lang].nowMsg); });
+$("forget").addEventListener("click", () => { clearSaved(); $("consent").checked=false; $("welcome").hidden=true; $("forget").hidden=true; });
+$("listen").addEventListener("click", listen);
+$("crop").addEventListener("change", () => { S.rank=0; });
+if ("speechSynthesis" in window) speechSynthesis.getVoices();
+
+/* ---------- start ---------- */
+const returning = load();
+applyLang();
+if (returning){ $("welcome").hidden=false; $("welcome").textContent=L[S.lang].welcome; $("forget").hidden=false; }
+run(false);
+</script>
+</body>
+</html>
